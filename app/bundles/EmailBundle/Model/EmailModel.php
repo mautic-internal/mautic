@@ -1846,7 +1846,7 @@ class EmailModel extends FormModel implements AjaxLookupModelInterface
         }
 
         $chart = new LineChart($unit, $dateFrom, $dateTo, $dateFormat);
-        $query = new ChartQuery($this->em->getConnection(), $dateFrom, $dateTo);
+        $query = new ChartQuery($this->em->getConnection(), $dateFrom, $dateTo, $unit);
 
         if ($flag == 'sent_and_opened_and_failed' || $flag == 'all' || $flag == 'sent_and_opened' || !$flag || in_array('sent', $datasets)) {
             $q = $query->prepareTimeDataQuery('email_stats', 'date_sent', $filter);
@@ -1888,7 +1888,14 @@ class EmailModel extends FormModel implements AjaxLookupModelInterface
 
         if ($flag == 'all' || $flag == 'clicked' || in_array('clicked', $datasets)) {
             $q = $query->prepareTimeDataQuery('page_hits', 'date_hit', []);
-            $q->leftJoin('t', MAUTIC_TABLE_PREFIX.'email_stats', 'es', 't.source_id = es.email_id AND t.source = "email"');
+
+            if ($segmentId !== null) {
+                $q->innerJoin('t', '(SELECT DISTINCT email_id FROM '.MAUTIC_TABLE_PREFIX.'email_stats WHERE list_id = :segmentId)', 'es', 't.source_id = es.email_id');
+                $q->setParameter('segmentId', $segmentId);
+            }
+
+            $q->andWhere('t.source = :source');
+            $q->setParameter('source', 'email');
 
             if (isset($filter['email_id'])) {
                 if (is_array($filter['email_id'])) {
@@ -1905,7 +1912,7 @@ class EmailModel extends FormModel implements AjaxLookupModelInterface
             }
             $this->addCompanyFilter($q, $companyId);
             $this->addCampaignFilter($q, $campaignId);
-            $this->addSegmentFilter($q, $segmentId, 'es');
+
             $data = $query->loadAndBuildTimeData($q);
 
             $chart->setDataset($this->translator->trans('mautic.email.clicked'), $data);
@@ -1980,9 +1987,7 @@ class EmailModel extends FormModel implements AjaxLookupModelInterface
     private function addCampaignFilter(QueryBuilder $q, $campaignId = null, $fromAlias = 't')
     {
         if ($campaignId !== null) {
-            $q->innerJoin($fromAlias, MAUTIC_TABLE_PREFIX.'campaign_lead_event_log', 'ce', $fromAlias.'.source_id = ce.event_id AND '.$fromAlias.'.source = "campaign.event" AND '.$fromAlias.'.lead_id = ce.lead_id')
-                ->innerJoin('ce', MAUTIC_TABLE_PREFIX.'campaigns', 'campaign', 'ce.campaign_id = campaign.id')
-                ->andWhere('ce.campaign_id = :campaignId')
+            $q->innerJoin($fromAlias, '(SELECT DISTINCT event_id, lead_id FROM '.MAUTIC_TABLE_PREFIX.'campaign_lead_event_log WHERE campaign_id = :campaignId)', 'clel', $fromAlias.'.source_id = clel.event_id AND '.$fromAlias.'.source = "campaign.event" AND '.$fromAlias.'.lead_id = clel.lead_id')
                 ->setParameter('campaignId', $campaignId);
         }
     }
@@ -1995,8 +2000,7 @@ class EmailModel extends FormModel implements AjaxLookupModelInterface
     private function addSegmentFilter(QueryBuilder $q, $segmentId = null, $fromAlias = 't')
     {
         if ($segmentId !== null) {
-            $q->innerJoin($fromAlias, MAUTIC_TABLE_PREFIX.'lead_lists', 'll', $fromAlias.'.list_id = ll.id')
-                ->andWhere($fromAlias.'.list_id = :segmentId')
+            $q->andWhere($fromAlias.'.list_id = :segmentId')
                 ->setParameter('segmentId', $segmentId);
         }
     }
