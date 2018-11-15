@@ -153,7 +153,7 @@ class FrequencyRuleRepository extends CommonRepository
             ->join('ch', MAUTIC_TABLE_PREFIX.'lead_frequencyrules', 'fr', "ch.{$statContactColumn} = fr.lead_id");
 
         if ($channel) {
-            $q->andWhere('fr.channel = :channel or fr.channel is null')
+            $q->andWhere('fr.channel = :channel')
                 ->setParameter('channel', $channel);
         }
 
@@ -174,6 +174,8 @@ class FrequencyRuleRepository extends CommonRepository
         $q->having("count(ch.$statContactColumn) >= fr.frequency_number");
 
         $results = $q->execute()->fetchAll();
+        var_export($q->getParameters());
+        var_export($q->getSQL());
 
         return $results;
     }
@@ -241,6 +243,8 @@ class FrequencyRuleRepository extends CommonRepository
             $results[$key]['frequency_number'] = $defaultFrequencyNumber;
             $results[$key]['frequency_time']   = $defaultFrequencyTime;
         }
+        var_export($q->getParameters());
+        die(var_export($q->getSQL(), true));
 
         return $results;
     }
