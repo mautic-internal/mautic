@@ -174,8 +174,6 @@ class FrequencyRuleRepository extends CommonRepository
         $q->having("count(ch.$statContactColumn) >= fr.frequency_number");
 
         $results = $q->execute()->fetchAll();
-        var_export($q->getParameters());
-        var_export($q->getSQL());
 
         return $results;
     }
@@ -243,8 +241,6 @@ class FrequencyRuleRepository extends CommonRepository
             $results[$key]['frequency_number'] = $defaultFrequencyNumber;
             $results[$key]['frequency_time']   = $defaultFrequencyTime;
         }
-        var_export($q->getParameters());
-        die(var_export($q->getSQL(), true));
 
         return $results;
     }
