@@ -70,6 +70,8 @@ class WidgetDetailEvent extends CommonEvent
     }
 
     /**
+     * We need to cast DateTime objects to strings to use them in the cache key.
+     *
      * @param \DateTime|string $value
      *
      * @return null|string
@@ -77,6 +79,7 @@ class WidgetDetailEvent extends CommonEvent
     private function castDateTimeToString($value)
     {
         if ($value instanceof \DateTime) {
+            // We use RFC 2822 format because it includes timezone
             $value = $value->format('r');
             if (false !== $value) {
                 return $value;
@@ -108,9 +111,9 @@ class WidgetDetailEvent extends CommonEvent
 
         $params = $this->getWidget()->getParams();
 
-        foreach (['dateTo', 'dateFrom'] as $index => $key) {
-            if (isset($params[$key])) {
-                $date = $this->castDateTimeToString($params[$key]);
+        foreach (['dateTo', 'dateFrom'] as $key => $dateParameter) {
+            if (isset($params[$dateParameter])) {
+                $date = $this->castDateTimeToString($params[$dateParameter]);
                 if (null !== $date) {
                     $cacheKey[] = $date;
                 }
