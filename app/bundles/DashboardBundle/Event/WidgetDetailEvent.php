@@ -105,7 +105,6 @@ class WidgetDetailEvent extends CommonEvent
     public function getCacheKey()
     {
         $cacheKey = [
-            $this->cacheKeyPath,
             $this->getUniqueWidgetId(),
         ];
 
@@ -120,9 +119,8 @@ class WidgetDetailEvent extends CommonEvent
             }
         }
 
-        $cacheKey = implode('', $cacheKey);
-
-        return $cacheKey;
+        $cacheKey = substr(md5(implode('', $cacheKey)), 0, 16);
+        return $this->cacheKeyPath . $cacheKey;
     }
 
     /**
