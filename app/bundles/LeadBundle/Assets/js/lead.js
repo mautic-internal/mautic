@@ -389,13 +389,16 @@ Mautic.reorderSegmentFilters = function() {
                 return true;
             }
 
-            var newName = prefix+'[filters]['+counter+']['+suffix+']';
-            if (typeof name !== 'undefined' && name.slice(-2) === '[]') {
-                newName += '[]';
+            if (name) {
+                var newName = prefix + '[filters][' + counter + '][' + suffix + ']';
+                if (name.slice(-2) === '[]') {
+                    newName += '[]';
+                }
+
+                mQuery(this).attr('name', newName);
             }
 
-            mQuery(this).attr('name', newName);
-            mQuery(this).attr('id', prefix + '_filters_'+counter+'_'+suffix);
+            mQuery(this).attr('id', prefix + '_filters_' + counter + '_' + suffix);
 
             // Destroy the chosen and recreate
             if (mQuery(this).is('select') && suffix == "filter") {
