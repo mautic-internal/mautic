@@ -50,8 +50,8 @@ trait FilterTrait
         $options   = $form->getConfig()->getOptions();
 
         if (!isset($data['type'])) {
-            $data['type']  = 'text';
-            $data['field'] = '';
+            $data['type']     = 'text';
+            $data['field']    = '';
             $data['operator'] = null;
         }
 
