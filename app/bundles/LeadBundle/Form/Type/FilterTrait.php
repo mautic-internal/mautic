@@ -48,6 +48,13 @@ trait FilterTrait
         $data      = $event->getData();
         $form      = $event->getForm();
         $options   = $form->getConfig()->getOptions();
+
+        if (!isset($data['type'])) {
+            $data['type']  = 'text';
+            $data['field'] = '';
+            $data['operator'] = null;
+        }
+
         $fieldType = $data['type'];
         $fieldName = $data['field'];
 
