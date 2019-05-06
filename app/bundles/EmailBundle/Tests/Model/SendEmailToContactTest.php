@@ -20,6 +20,7 @@ use Mautic\EmailBundle\Entity\Stat;
 use Mautic\EmailBundle\Entity\StatRepository;
 use Mautic\EmailBundle\Event\EmailSendEvent;
 use Mautic\EmailBundle\Exception\FailedToSendToContactException;
+use Mautic\EmailBundle\Helper\FromEmailHelper;
 use Mautic\EmailBundle\Helper\MailHelper;
 use Mautic\EmailBundle\Model\EmailModel;
 use Mautic\EmailBundle\Model\SendEmailToContact;
@@ -255,6 +256,13 @@ class SendEmailToContactTest extends \PHPUnit\Framework\TestCase
         $factoryMock->method('getRouter')
             ->willReturn($routerMock);
 
+        $fromEmaiHelper = $this->createMock(FromEmailHelper::class);
+        $fromEmaiHelper->method('getFromAddressArrayConsideringOwner')
+            ->willReturn(['someone@somewhere.com' => null]);
+        $factoryMock->method('get')
+            ->with('mautic.helper.from_email_helper')
+            ->willReturn($fromEmaiHelper);
+
         $mailHelper = $this->getMockBuilder(MailHelper::class)
             ->setConstructorArgs([$factoryMock, $mailer])
             ->setMethods(['createEmailStat'])
@@ -414,6 +422,13 @@ class SendEmailToContactTest extends \PHPUnit\Framework\TestCase
         $factoryMock->method('getModel')
             ->willReturn($emailModelMock);
 
+        $fromEmaiHelper = $this->createMock(FromEmailHelper::class);
+        $fromEmaiHelper->method('getFromAddressArrayConsideringOwner')
+            ->willReturn(['someone@somewhere.com' => null]);
+        $factoryMock->method('get')
+            ->with('mautic.helper.from_email_helper')
+            ->willReturn($fromEmaiHelper);
+
         $mailHelper = $this->getMockBuilder(MailHelper::class)
             ->setConstructorArgs([$factoryMock, $mailer])
             ->setMethods(null)
@@ -516,6 +531,13 @@ class SendEmailToContactTest extends \PHPUnit\Framework\TestCase
             ->getMock();
         $factoryMock->method('getRouter')
             ->willReturn($routerMock);
+
+        $fromEmaiHelper = $this->createMock(FromEmailHelper::class);
+        $fromEmaiHelper->method('getFromAddressArrayConsideringOwner')
+            ->willReturn(['someone@somewhere.com' => null]);
+        $factoryMock->method('get')
+            ->with('mautic.helper.from_email_helper')
+            ->willReturn($fromEmaiHelper);
 
         $mailHelper = $this->getMockBuilder(MailHelper::class)
             ->setConstructorArgs([$factoryMock, $mailer])
@@ -648,6 +670,14 @@ class SendEmailToContactTest extends \PHPUnit\Framework\TestCase
             ->willReturn(
                 new EventDispatcher()
             );
+
+        $fromEmaiHelper = $this->createMock(FromEmailHelper::class);
+        $fromEmaiHelper->method('getFromAddressArrayConsideringOwner')
+            ->willReturn(['someone@somewhere.com' => null]);
+        $factoryMock->method('get')
+            ->with('mautic.helper.from_email_helper')
+            ->willReturn($fromEmaiHelper);
+
         $routerMock = $this->getMockBuilder(Router::class)
             ->disableOriginalConstructor()
             ->getMock();
