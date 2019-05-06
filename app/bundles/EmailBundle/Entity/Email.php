@@ -1194,7 +1194,7 @@ class Email extends FormEntity implements VariantEntityInterface, TranslationEnt
     }
 
     /**
-     * @param $field
+     * @param string $field
      *
      * @return callback
      */

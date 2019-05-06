@@ -2163,10 +2163,6 @@ class MailHelper
         }
     }
 
-    private function getFromEmailForQueue()
-    {
-    }
-
     /**
      * @param $contact
      *
