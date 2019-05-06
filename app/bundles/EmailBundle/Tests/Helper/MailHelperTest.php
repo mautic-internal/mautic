@@ -57,6 +57,11 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
     private $fromEmailHelper;
 
     /**
+     * @var MauticFactory|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $mockFactory;
+
+    /**
      * @var array
      */
     protected $contacts = [
@@ -94,7 +99,13 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
     {
         defined('MAUTIC_ENV') or define('MAUTIC_ENV', 'test');
 
-        $this->mockFactory           = $this->createMock(MauticFactory::class);
+        $this->fromEmailHelper = $this->createMock(FromEmailHelper::class);
+
+        $this->mockFactory     = $this->createMock(MauticFactory::class);
+        $this->mockFactory->method('get')
+            ->with('mautic.helper.from_email_helper')
+            ->willReturn($this->fromEmailHelper);
+
         $this->swiftEventsDispatcher = $this->createMock(\Swift_Events_EventDispatcher::class);
         $this->delegatingSpool       = $this->createMock(DelegatingSpool::class);
 
@@ -106,7 +117,7 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
      */
     public function testQueueModeThrowsExceptionWhenBatchLimitHit()
     {
-        $mockFactory = $this->createFactory();
+        $mockFactory = $this->mockFactory;
         $mockFactory->method('getParameter')
             ->will(
                 $this->returnValueMap(
@@ -135,7 +146,7 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
 
     public function testQueueModeDisabledDoesNotThrowsExceptionWhenBatchLimitHit()
     {
-        $mockFactory = $this->createFactory();
+        $mockFactory = $this->mockFactory;
         $mockFactory->method('getParameter')
             ->will(
                 $this->returnValueMap(
@@ -741,7 +752,7 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
         $mockLeadModel->method('getRepository')
             ->willReturn($mockLeadRepository);
 
-        $mockFactory = $this->createFactory();
+        $mockFactory = $this->mockFactory;
 
         $parameterMap = array_merge(
             [
@@ -791,7 +802,7 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
 
     public function testArrayOfAddressesAreRemappedIntoEmailToNameKeyValuePair()
     {
-        $mockFactory = $this->createFactory();
+        $mockFactory = $this->mockFactory;
         $mockFactory->method('getParameter')
             ->will(
                 $this->returnValueMap(
@@ -837,21 +848,5 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
 
         $mailer = new MailHelper($this->mockFactory, $swiftMailer, ['nobody@nowhere.com' => 'No Body']);
         $this->assertFalse($mailer->inTokenizationMode());
-    }
-
-    /**
-     * @return \PHPUnit_Framework_MockObject_MockObject|MauticFactory
-     */
-    private function createFactory()
-    {
-        $mockFactory = $this->createMock(MauticFactory::class);
-
-        $this->fromEmailHelper = $this->createMock(FromEmailHelper::class);
-
-        $mockFactory->method('get')
-            ->with('mautic.helper.from_email_helper')
-            ->willReturn($this->fromEmailHelper);
-
-        return $mockFactory;
     }
 }
