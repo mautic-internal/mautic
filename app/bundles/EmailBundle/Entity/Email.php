@@ -1196,7 +1196,7 @@ class Email extends FormEntity implements VariantEntityInterface, TranslationEnt
     /**
      * @param string $field
      *
-     * @return callback
+     * @return \Symfony\Component\Validator\Constraints\Callback
      */
     private static function getTokenOrEmailConstraint($field)
     {
