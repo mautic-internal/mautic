@@ -345,47 +345,6 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(['contact3@somewhere.com' => null], $mailer->message->getTo());
     }
 
-    public function testMailAsOwnerWithEncodedCharactersInName()
-    {
-        $mockFactory = $this->getMockFactory();
-
-        $transport   = new BatchTransport();
-        $swiftMailer = new \Swift_Mailer($transport);
-
-        $from   = ['nobody@nowhere.com' => 'No Body&#39;s Business'];
-        $mailer = new MailHelper($mockFactory, $swiftMailer, $from);
-        $mailer->enableQueue();
-        $this->fromEmailHelper->expects($this->exactly(4))
-            ->method('getFromAddressArrayConsideringOwner')
-            ->willReturnOnConsecutiveCalls(
-                ['owner1@owner.com' => null],
-                ['nobody@nowhere.com' => "No Body's Business"],
-                ['owner2@owner.com'   => null],
-                ['owner3@owner.com'   => "John S'mith"]
-            );
-
-        $mailer->setSubject('Hello');
-
-        $contacts                = $this->contacts;
-        $contacts[3]['owner_id'] = 3;
-
-        foreach ($contacts as $contact) {
-            $mailer->addTo($contact['email']);
-            $mailer->setLead($contact);
-            $mailer->queue();
-        }
-
-        $mailer->flushQueue([]);
-
-        $fromAddresses = $transport->getFromAddresses();
-        $fromNames     = $transport->getFromNames();
-
-        $this->assertEquals(4, count($fromAddresses));
-        $this->assertEquals(4, count($fromNames));
-        $this->assertEquals(['owner1@owner.com', 'nobody@nowhere.com', 'owner2@owner.com', 'owner3@owner.com'], $fromAddresses);
-        $this->assertEquals([null, "No Body's Business", null, "John S'mith"], $fromNames);
-    }
-
     public function testBatchIsEnabledWithBcTokenInterface()
     {
         $mockFactory = $this->getMockFactory();
