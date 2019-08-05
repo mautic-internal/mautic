@@ -44,14 +44,24 @@ class FrequencyRuleRepository extends CommonRepository
 
         $frequencyRuleViolations = $this->getCustomFrequencyRuleViolations($channel, $leadIds, $statTable, $statContactColumn, $statSentColumn);
 
-        if (!$defaultFrequencyTime || !$defaultFrequencyNumber) {
-            // Makes no sense to calculate default rule violations
-            // if default parameters are empty
+        if (!$this->validateDefaultParameters($defaultFrequencyNumber, $defaultFrequencyTime)) {
+            // It makes no sense to calculate default rule violations
+            // if default parameters are not valid
             return $frequencyRuleViolations;
         }
 
         $defaultRuleViolations = $this->getDefaultFrequencyRuleViolations($leadIds, $defaultFrequencyNumber, $defaultFrequencyTime, $statTable, $statContactColumn, $statSentColumn);
         return array_merge($frequencyRuleViolations, $defaultRuleViolations);
+    }
+
+    /**
+     * @param mixed $number
+     * @param mixed $time
+     * @return bool
+     */
+    private function validateDefaultParameters($number, $time)
+    {
+        return $number && $time;
     }
 
     /**
