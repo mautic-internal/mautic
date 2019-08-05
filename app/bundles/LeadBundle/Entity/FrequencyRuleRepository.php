@@ -51,12 +51,16 @@ class FrequencyRuleRepository extends CommonRepository
         }
 
         $defaultRuleViolations = $this->getDefaultFrequencyRuleViolations($leadIds, $defaultFrequencyNumber, $defaultFrequencyTime, $statTable, $statContactColumn, $statSentColumn);
+
         return array_merge($frequencyRuleViolations, $defaultRuleViolations);
     }
 
     /**
+     * Validates default parameters
+     *
      * @param mixed $number
      * @param mixed $time
+     *
      * @return bool
      */
     private function validateDefaultParameters($number, $time)
