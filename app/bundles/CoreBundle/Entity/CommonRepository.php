@@ -1710,4 +1710,20 @@ class CommonRepository extends EntityRepository
             $f[$key] = (!empty($alias)) ? $alias.'.'.$col : $col;
         }
     }
+
+    /**
+     * Checks if table contains any rows
+     *
+     * @param string $table
+     * @return bool
+     */
+    protected function tableHasRows($table)
+    {
+        $query = $this->getEntityManager()->getConnection()->createQueryBuilder();
+        $query->select('null')
+            ->from($table)
+            ->setMaxResults(1);
+
+        return (bool)count($query->execute()->fetchAll());
+    }
 }
