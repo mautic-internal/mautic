@@ -42,23 +42,16 @@ class FrequencyRuleRepository extends CommonRepository
             return [];
         }
 
-        $violations = $this->getCustomFrequencyRuleViolations($channel, $leadIds, $statTable, $statContactColumn, $statSentColumn);
+        $frequencyRuleViolations = $this->getCustomFrequencyRuleViolations($channel, $leadIds, $statTable, $statContactColumn, $statSentColumn);
 
-        if ($defaultFrequencyTime && $defaultFrequencyNumber) {
-            $violations = array_merge(
-                $violations,
-                $this->getDefaultFrequencyRuleViolations(
-                    $leadIds,
-                    $defaultFrequencyNumber,
-                    $defaultFrequencyTime,
-                    $statTable,
-                    $statContactColumn,
-                    $statSentColumn
-                )
-            );
+        if (!$defaultFrequencyTime || !$defaultFrequencyNumber) {
+            // Makes no sense to calculate default rule violations
+            // if default parameters are empty
+            return $frequencyRuleViolations;
         }
 
-        return $violations;
+        $defaultRuleViolations = $this->getDefaultFrequencyRuleViolations($leadIds, $defaultFrequencyNumber, $defaultFrequencyTime, $statTable, $statContactColumn, $statSentColumn);
+        return array_merge($frequencyRuleViolations, $defaultRuleViolations);
     }
 
     /**
@@ -226,13 +219,13 @@ class FrequencyRuleRepository extends CommonRepository
             $query->expr()->in("ch.$statContactColumn", $leadIds)
         );
 
-        $hasCustomRules = $this->tableHasRows(MAUTIC_TABLE_PREFIX . 'lead_frequencyrules');
+        $hasCustomRules = $this->tableHasRows(MAUTIC_TABLE_PREFIX.'lead_frequencyrules');
         // We don't need to check if users have custom frequency rules if there are no records inside that table
         if ($hasCustomRules) {
             // Exclude contacts with custom rules defined
             $subQuery = $this->getEntityManager()->getConnection()->createQueryBuilder();
             $subQuery->select('null')
-                ->from(MAUTIC_TABLE_PREFIX . 'lead_frequencyrules', 'fr')
+                ->from(MAUTIC_TABLE_PREFIX.'lead_frequencyrules', 'fr')
                 ->where("fr.lead_id = ch.{$statContactColumn}")
                 ->andWhere('fr.frequency_time IS NOT NULL AND fr.frequency_number IS NOT NULL');
             $query->andWhere(
