@@ -234,7 +234,7 @@ class FrequencyRuleRepository extends CommonRepository
         );
 
         $hasCustomRules = $this->tableHasRows(MAUTIC_TABLE_PREFIX.'lead_frequencyrules');
-        // We don't need to check if users have custom frequency rules if there are no records inside that table
+        // We don't need to check if users have custom rules if there are no records inside that table
         if ($hasCustomRules) {
             // Exclude contacts with custom rules defined
             $subQuery = $this->getEntityManager()->getConnection()->createQueryBuilder();
