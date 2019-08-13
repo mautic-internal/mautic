@@ -49,11 +49,7 @@ return [
         ],
     ],
     'services' => [
-        'events' => [
-            // 'mautic.dashboard.subscriber' => array(
-            //     'class' => 'Mautic\DashboardBundle\EventListener\DashboardSubscriber'
-            // ),
-        ],
+        'events' => [],
         'forms' => [
             'mautic.dashboard.form.type.widget' => [
                 'class'     => 'Mautic\DashboardBundle\Form\Type\WidgetType',
@@ -95,7 +91,6 @@ return [
                 'arguments' => [
                     'translator',
                     'mautic.cache.provider',
-
                     'mautic.helper.user',
                 ],
             ],
