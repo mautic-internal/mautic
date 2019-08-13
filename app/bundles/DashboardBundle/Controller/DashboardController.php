@@ -27,6 +27,7 @@ class DashboardController extends FormController
      * Generates the default view.
      *
      * @return \Symfony\Component\HttpFoundation\JsonResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function indexAction()
     {
@@ -82,6 +83,40 @@ class DashboardController extends FormController
                 'mauticContent' => 'dashboard',
                 'route'         => $this->generateUrl('mautic_dashboard_index'),
             ],
+        ]);
+    }
+
+    /**
+     * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function widgetAction($widgetId)
+    {
+        $request = $this->get('request_stack')->getCurrentRequest();
+
+        if (!$request->isXmlHttpRequest() && false) {
+            throw new NotFoundHttpException('Not found.');
+        }
+
+        /** @var WidgetService $widgetService */
+        $widgetService = $this->get('mautic.dashboard.widget');
+        $widgetService->setFilter($request);
+        $widget        = $widgetService->get((int) $widgetId);
+
+        if (!$widget) {
+            throw new NotFoundHttpException('Not found.');
+        }
+
+        $response = $this->render(
+            'MauticDashboardBundle:Dashboard:widget.html.php',
+            ['widget' => $widget]
+        );
+
+        return new JsonResponse([
+            'success'      => 1,
+            'widgetId'     => $widgetId,
+            'widgetHtml'   => $response->getContent(),
+            'widgetWidth'  => $widget->getWidth(),
+            'widgetHeight' => $widget->getHeight(),
         ]);
     }
 
@@ -537,6 +572,7 @@ class DashboardController extends FormController
      * Gets name from request and defaults it to the timestamp if not provided.
      *
      * @return string
+     * @throws \Exception
      */
     private function getNameFromRequest()
     {

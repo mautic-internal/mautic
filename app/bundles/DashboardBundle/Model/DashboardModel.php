@@ -19,8 +19,8 @@ use Mautic\CoreBundle\Model\FormModel;
 use Mautic\DashboardBundle\DashboardEvents;
 use Mautic\DashboardBundle\Entity\Widget;
 use Mautic\DashboardBundle\Event\WidgetDetailEvent;
+use Mautic\DashboardBundle\Widget\WidgetDetailEventFactory;
 use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
@@ -43,26 +43,26 @@ class DashboardModel extends FormModel
      * @var PathsHelper
      */
     protected $pathsHelper;
-
     /**
-     * @var Filesystem
+     * @var WidgetDetailEventFactory
      */
-    protected $filesystem;
+    private $eventFactory;
 
     /**
      * DashboardModel constructor.
      *
-     * @param CoreParametersHelper $coreParametersHelper
-     * @param PathsHelper          $pathsHelper
+     * @param CoreParametersHelper     $coreParametersHelper
+     * @param PathsHelper              $pathsHelper
+     * @param WidgetDetailEventFactory $eventFactory
      */
     public function __construct(
         CoreParametersHelper $coreParametersHelper,
         PathsHelper $pathsHelper,
-        Filesystem $filesystem
-        ) {
+        WidgetDetailEventFactory $eventFactory
+    ) {
         $this->coreParametersHelper = $coreParametersHelper;
         $this->pathsHelper          = $pathsHelper;
-        $this->filesystem           = $filesystem;
+        $this->eventFactory         = $eventFactory;
     }
 
     /**
@@ -176,6 +176,7 @@ class DashboardModel extends FormModel
      * Generates a translatable description for a dashboard.
      *
      * @return string
+     * @throws \Exception
      */
     public function generateDescription()
     {
@@ -264,6 +265,7 @@ class DashboardModel extends FormModel
         $event->setWidget($widget);
         $event->setCacheDir($cacheDir, $this->userHelper->getUser()->getId());
         $event->setSecurity($this->security);
+
         $this->dispatcher->dispatch(DashboardEvents::DASHBOARD_ON_MODULE_DETAIL_GENERATE, $event);
     }
 
@@ -306,7 +308,8 @@ class DashboardModel extends FormModel
      * Create/edit entity.
      *
      * @param object $entity
-     * @param bool   $unlock
+     * @param bool $unlock
+     * @throws \Exception
      */
     public function saveEntity($entity, $unlock = true)
     {
@@ -324,6 +327,7 @@ class DashboardModel extends FormModel
      * Generate default date range filter and time unit.
      *
      * @return array
+     * @throws \Exception
      */
     public function getDefaultFilter()
     {
