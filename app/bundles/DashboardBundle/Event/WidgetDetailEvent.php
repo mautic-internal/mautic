@@ -48,6 +48,11 @@ class WidgetDetailEvent extends CommonEvent
      */
     private $cacheProvider;
 
+    /**
+     * WidgetDetailEvent constructor.
+     * @param TranslatorInterface $translator
+     * @param CacheProvider|null $cacheProvider
+     */
     public function __construct(TranslatorInterface $translator, CacheProvider $cacheProvider = null)
     {
         $this->translator    = $translator;
@@ -55,6 +60,9 @@ class WidgetDetailEvent extends CommonEvent
         $this->cacheProvider = $cacheProvider;
     }
 
+    /**
+     * @return bool
+     */
     private function usesLegacyCache()
     {
         return $this->cacheProvider === null;
