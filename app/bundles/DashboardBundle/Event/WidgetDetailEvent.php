@@ -43,7 +43,8 @@ class WidgetDetailEvent extends CommonEvent
     /**
      * @var CorePermissions
      */
-    protected $security = null;
+    protected $security;
+    
     /**
      * @var CacheProvider
      */
@@ -140,8 +141,6 @@ class WidgetDetailEvent extends CommonEvent
 
     /**
      * Set the widget entity.
-     *
-     * @param Widget $widget
      */
     public function setWidget(Widget $widget)
     {
@@ -204,9 +203,6 @@ class WidgetDetailEvent extends CommonEvent
     }
 
     /**
-     * @param array $templateData
-     * @param bool  $skipCache
-     *
      * @return bool
      *
      * @throws \Psr\Cache\InvalidArgumentException
@@ -333,8 +329,6 @@ class WidgetDetailEvent extends CommonEvent
 
     /**
      * Set security object to check the perimissions.
-     *
-     * @param CorePermissions $security
      */
     public function setSecurity(CorePermissions $security)
     {
@@ -343,8 +337,6 @@ class WidgetDetailEvent extends CommonEvent
 
     /**
      * Check if the user has at least one permission of defined array of permissions.
-     *
-     * @param array $permissions
      *
      * @return bool
      */

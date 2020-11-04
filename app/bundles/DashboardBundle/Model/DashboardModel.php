@@ -20,6 +20,7 @@ use Mautic\DashboardBundle\DashboardEvents;
 use Mautic\DashboardBundle\Entity\Widget;
 use Mautic\DashboardBundle\Event\WidgetDetailEvent;
 use Mautic\DashboardBundle\Widget\WidgetDetailEventFactory;
+use Mautic\DashboardBundle\Form\Type\WidgetType;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -65,9 +66,6 @@ class DashboardModel extends FormModel
         $this->eventFactory         = $eventFactory;
     }
 
-    /**
-     * @param Session $session
-     */
     public function setSession(Session $session)
     {
         $this->session = $session;
@@ -98,17 +96,15 @@ class DashboardModel extends FormModel
      *
      * @param $id
      *
-     * @return null|object
+     * @return object|null
      */
     public function getEntity($id = null)
     {
-        if ($id === null) {
+        if (null === $id) {
             return new Widget();
         }
 
-        $entity = parent::getEntity($id);
-
-        return $entity;
+        return parent::getEntity($id);
     }
 
     /**
@@ -210,8 +206,6 @@ class DashboardModel extends FormModel
     /**
      * Creates a new Widget object from an array data.
      *
-     * @param array $data
-     *
      * @return Widget
      */
     public function populateWidgetEntity(array $data)
@@ -232,15 +226,14 @@ class DashboardModel extends FormModel
     /**
      * Load widget content from the onWidgetDetailGenerate event.
      *
-     * @param Widget $widget
-     * @param array  $filter
+     * @param array $filter
      */
     public function populateWidgetContent(Widget $widget, $filter = [])
     {
-        $cacheDir = $this->coreParametersHelper->getParameter('cached_data_dir', $this->pathsHelper->getSystemPath('cache', true));
+        $cacheDir = $this->coreParametersHelper->get('cached_data_dir', $this->pathsHelper->getSystemPath('cache', true));
 
-        if ($widget->getCacheTimeout() === null || $widget->getCacheTimeout() === -1) {
-            $widget->setCacheTimeout($this->coreParametersHelper->getParameter('cached_data_timeout'));
+        if (null === $widget->getCacheTimeout() || -1 === $widget->getCacheTimeout()) {
+            $widget->setCacheTimeout($this->coreParametersHelper->get('cached_data_timeout'));
         }
 
         // Merge global filter with widget params
@@ -274,8 +267,9 @@ class DashboardModel extends FormModel
      */
     public function clearDashboardCache()
     {
-        $cacheDir     = $this->coreParametersHelper->getParameter('cached_data_dir', $this->pathsHelper->getSystemPath('cache', true));
-        $cacheStorage = new CacheStorageHelper($cacheDir, $this->userHelper->getUser()->getId());
+        $cacheDir     = $this->coreParametersHelper->get('cached_data_dir', $this->pathsHelper->getSystemPath('cache', true));
+        $cacheStorage = new CacheStorageHelper(CacheStorageHelper::ADAPTOR_FILESYSTEM, $this->userHelper->getUser()->getId(), null, $cacheDir);
+
         $cacheStorage->clear();
     }
 
@@ -301,7 +295,7 @@ class DashboardModel extends FormModel
             $options['action'] = $action;
         }
 
-        return $formFactory->create('widget', $entity, $options);
+        return $formFactory->create(WidgetType::class, $entity, $options);
     }
 
     /**
@@ -331,7 +325,7 @@ class DashboardModel extends FormModel
      */
     public function getDefaultFilter()
     {
-        $dateRangeDefault = $this->coreParametersHelper->getParameter('default_daterange_filter', '-1 month');
+        $dateRangeDefault = $this->coreParametersHelper->get('default_daterange_filter', '-1 month');
         $dateRangeStart   = new \DateTime();
         $dateRangeStart->modify($dateRangeDefault);
 
