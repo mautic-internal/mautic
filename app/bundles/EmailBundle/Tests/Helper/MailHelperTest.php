@@ -57,11 +57,6 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
     private $fromEmailHelper;
 
     /**
-     * @var MauticFactory|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private $mockFactory;
-
-    /**
      * @var array
      */
     protected $contacts = [
