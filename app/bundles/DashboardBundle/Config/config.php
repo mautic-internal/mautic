@@ -86,6 +86,16 @@ return [
                 ],
             ],
         ],
+        'other' => [
+            'mautic.dashboard.widget' => [
+                'class'     => \Mautic\DashboardBundle\Dashboard\Widget::class,
+                'arguments' => [
+                    'mautic.dashboard.model.dashboard',
+                    'mautic.helper.user',
+                    'session',
+                ],
+            ],
+        ],
     ],
     'parameters' => [
         'dashboard_import_dir'      => '%kernel.root_dir%/../media/dashboards',
