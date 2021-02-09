@@ -44,7 +44,7 @@ class WidgetDetailEvent extends CommonEvent
      * @var CorePermissions
      */
     protected $security;
-    
+
     /**
      * @var CacheProvider
      */
@@ -52,9 +52,6 @@ class WidgetDetailEvent extends CommonEvent
 
     /**
      * WidgetDetailEvent constructor.
-     *
-     * @param TranslatorInterface $translator
-     * @param CacheProvider|null  $cacheProvider
      */
     public function __construct(TranslatorInterface $translator, CacheProvider $cacheProvider = null)
     {

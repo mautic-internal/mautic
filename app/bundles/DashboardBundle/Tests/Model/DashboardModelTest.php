@@ -19,6 +19,7 @@ use Mautic\DashboardBundle\Model\DashboardModel;
 use Mautic\DashboardBundle\Widget\WidgetDetailEventFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Session\Session;
 
 class DashboardModelTest extends TestCase
@@ -48,18 +49,25 @@ class DashboardModelTest extends TestCase
      */
     private $model;
 
+    /**
+     * @var Filesystem
+     */
+    private $filesystem;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->coreParametersHelper = $this->createMock(CoreParametersHelper::class);
-        $this->pathsHelper          = $this->createMock(PathsHelper::class);
-        $this->widgetDetailEventFactory           = $this->createMock(WidgetDetailEventFactory::class);
+        $this->coreParametersHelper     = $this->createMock(CoreParametersHelper::class);
+        $this->pathsHelper              = $this->createMock(PathsHelper::class);
+        $this->widgetDetailEventFactory = $this->createMock(WidgetDetailEventFactory::class);
+        $this->filesystem               = $this->createMock(Filesystem::class);
 
         $this->model = new DashboardModel(
             $this->coreParametersHelper,
             $this->pathsHelper,
-            $this->widgetDetailEventFactory
+            $this->widgetDetailEventFactory,
+            $this->filesystem
         );
 
         $this->session = $this->createMock(Session::class);
