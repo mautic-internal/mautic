@@ -22,6 +22,7 @@ use Mautic\DashboardBundle\Event\WidgetDetailEvent;
 use Mautic\DashboardBundle\Widget\WidgetDetailEventFactory;
 use Mautic\DashboardBundle\Form\Type\WidgetType;
 use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
@@ -44,26 +45,27 @@ class DashboardModel extends FormModel
      * @var PathsHelper
      */
     protected $pathsHelper;
+
     /**
      * @var WidgetDetailEventFactory
      */
     private $eventFactory;
 
     /**
-     * DashboardModel constructor.
-     *
-     * @param CoreParametersHelper     $coreParametersHelper
-     * @param PathsHelper              $pathsHelper
-     * @param WidgetDetailEventFactory $eventFactory
+     * @var Filesystem
      */
+    private $filesystem;
+
     public function __construct(
         CoreParametersHelper $coreParametersHelper,
         PathsHelper $pathsHelper,
-        WidgetDetailEventFactory $eventFactory
+        WidgetDetailEventFactory $widgetEventFactory,
+        Filesystem $filesystem
     ) {
         $this->coreParametersHelper = $coreParametersHelper;
         $this->pathsHelper          = $pathsHelper;
-        $this->eventFactory         = $eventFactory;
+        $this->eventFactory         = $widgetEventFactory;
+        $this->filesystem           = $filesystem;
     }
 
     public function setSession(Session $session)
