@@ -101,40 +101,6 @@ class DashboardController extends AbstractFormController
     }
 
     /**
-     * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
-     */
-    public function widgetAction($widgetId)
-    {
-        $request = $this->get('request_stack')->getCurrentRequest();
-
-        if (!$request->isXmlHttpRequest() && false) {
-            throw new NotFoundHttpException('Not found.');
-        }
-
-        /** @var WidgetService $widgetService */
-        $widgetService = $this->get('mautic.dashboard.widget');
-        $widgetService->setFilter($request);
-        $widget        = $widgetService->get((int) $widgetId);
-
-        if (!$widget) {
-            throw new NotFoundHttpException('Not found.');
-        }
-
-        $response = $this->render(
-            'MauticDashboardBundle:Dashboard:widget.html.php',
-            ['widget' => $widget]
-        );
-
-        return new JsonResponse([
-            'success'      => 1,
-            'widgetId'     => $widgetId,
-            'widgetHtml'   => $response->getContent(),
-            'widgetWidth'  => $widget->getWidth(),
-            'widgetHeight' => $widget->getHeight(),
-        ]);
-    }
-
-    /**
      * @return JsonResponse|Response
      */
     public function widgetAction($widgetId)
