@@ -396,7 +396,7 @@ class WidgetDetailEvent extends CommonEvent
 
         try {
             $value = (string) $value;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new CouldNotFormatDateTimeException();
         }
 
