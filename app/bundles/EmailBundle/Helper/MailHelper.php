@@ -340,7 +340,7 @@ class MailHelper
 
         // Set from email
         if (!$isQueueFlush) {
-            $this->setFromForSingleMessage($useOwnerAsMailer);
+            $this->setFromForSingleMessage();
         } // from is set in flushQueue
 
         // Set system return path if applicable
@@ -2017,48 +2017,6 @@ class MailHelper
     }
 
     /**
-     * @param $contact
-     *
-     * @return bool|array
-     */
-    protected function getContactOwner(&$contact)
-    {
-        $owner = false;
-        $email = $this->getEmail();
-
-        if (!empty($email)) {
-            if ($email->getUseOwnerAsMailer() && is_array($contact) && isset($contact['id'])) {
-                if (!isset($contact['owner_id'])) {
-                    $contact['owner_id'] = 0;
-                } elseif (isset($contact['owner_id'])) {
-                    $leadModel = $this->factory->getModel('lead');
-                    if (isset(self::$leadOwners[$contact['owner_id']])) {
-                        $owner = self::$leadOwners[$contact['owner_id']];
-                    } elseif ($owner = $leadModel->getRepository()->getLeadOwner($contact['owner_id'])) {
-                        self::$leadOwners[$owner['id']] = $owner;
-                    }
-                }
-            }
-        }
-
-        return $owner;
-    }
-
-    /**
-     * @param $owner
-     *
-     * @return mixed
-     */
-    protected function getContactOwnerSignature($owner)
-    {
-        return empty($owner['signature'])
-            ? false
-            : EmojiHelper::toHtml(
-                str_replace('|FROM_NAME|', $owner['first_name'].' '.$owner['last_name'], nl2br($owner['signature']))
-            );
-    }
-
-    /**
      * @return array
      */
     private function getSystemHeaders()
@@ -2165,12 +2123,11 @@ class MailHelper
         $this->fromEmailHelper->setDefaultFromArray($this->systemFrom);
     }
 
-    /**
-     * @param bool $useOwnerAsMailer
-     */
-    private function setFromForSingleMessage($useOwnerAsMailer)
+    private function setFromForSingleMessage()
     {
-        if ($useOwnerAsMailer && $this->lead) {
+        $email = $this->getEmail();
+
+        if ($this->lead && $email && $email->getUseOwnerAsMailer()) {
             if (!isset($this->lead['owner_id'])) {
                 $this->lead['owner_id'] = 0;
             }
