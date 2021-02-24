@@ -215,13 +215,6 @@ class MailHelper
     protected $fatal = false;
 
     /**
-     * Flag whether to use only the globally set From email and name or whether to switch to mailer is owner.
-     *
-     * @var bool
-     */
-    protected $useGlobalFrom = false;
-
-    /**
      * Large batch mail sends may result on timeouts with SMTP servers. This will will keep track of the number of sends and restart the connection once met.
      *
      * @var int
@@ -329,18 +322,17 @@ class MailHelper
      *
      * @param bool $dispatchSendEvent
      * @param bool $isQueueFlush      (a tokenized/batch send via API such as Mandrill)
-     * @param bool $useOwnerAsMailer
      *
      * @return bool
      */
-    public function send($dispatchSendEvent = false, $isQueueFlush = false, $useOwnerAsMailer = true)
+    public function send($dispatchSendEvent = false, $isQueueFlush = false)
     {
         if ($this->tokenizationEnabled && !empty($this->queuedRecipients) && !$isQueueFlush) {
             // This transport uses tokenization and queue()/flushQueue() was not used therefore use them in order
             // properly populate metadata for this transport
 
             if ($result = $this->queue($dispatchSendEvent)) {
-                $result = $this->flushQueue(['To', 'Cc', 'Bcc'], $useOwnerAsMailer);
+                $result = $this->flushQueue(['To', 'Cc', 'Bcc']);
             }
 
             return $result;
@@ -560,12 +552,11 @@ class MailHelper
     /**
      * Send batched mail to mailer.
      *
-     * @param array $resetEmailTypes  Array of email types to clear after flusing the queue
-     * @param bool  $useOwnerAsMailer
+     * @param array $resetEmailTypes Array of email types to clear after flusing the queue
      *
      * @return bool
      */
-    public function flushQueue($resetEmailTypes = ['To', 'Cc', 'Bcc'], $useOwnerAsMailer = true)
+    public function flushQueue($resetEmailTypes = ['To', 'Cc', 'Bcc'])
     {
         // Assume true unless there was a fatal error configuring the mailer because if tokenizationEnabled is false, the send happened in queue()
         $flushed = empty($this->fatal);
@@ -581,10 +572,12 @@ class MailHelper
 
                 $this->errors = [];
 
-                if (!$this->useGlobalFrom) {
-                    $this->setFrom($metadatum['from'], null, null);
+                $email = $this->getEmail();
+
+                if ($email && $email->getUseOwnerAsMailer()) {
+                    $this->setFrom($metadatum['from']);
                 } else {
-                    $this->setFrom($this->from, null, null);
+                    $this->setFrom($this->from, null);
                 }
 
                 foreach ($metadatum['contacts'] as $email => $contact) {
@@ -645,7 +638,6 @@ class MailHelper
         $this->internalSend     = false;
         $this->fatal            = false;
         $this->idHashState      = true;
-        $this->useGlobalFrom    = false;
         $this->checkIfTransportNeedsRestart(true);
 
         $this->logger->clear();
@@ -978,7 +970,7 @@ class MailHelper
         $content = strtr($content, $this->embedImagesReplaces);
         if (preg_match_all('/<img.+?src=[\"\'](.+?)[\"\'].*?>/i', $content, $matches)) {
             foreach ($matches[1] as $match) {
-                if (false === strpos($match, 'cid:') && false === strpos($match, '{tracking_pixel}')) {
+                if (false === strpos($match, 'cid:') && false === strpos($match, '{tracking_pixel}') && !array_key_exists($match, $this->embedImagesReplaces)) {
                     $this->embedImagesReplaces[$match] = $this->message->embed(\Swift_Image::fromPath($match));
                 }
             }
@@ -1223,25 +1215,15 @@ class MailHelper
      *
      * @param string|array $fromEmail
      * @param string       $fromName
-     * @param bool|null    $isGlobal
      */
-    public function setFrom($fromEmail, $fromName = null, $isGlobal = true)
+    public function setFrom($fromEmail, $fromName = null)
     {
         $fromName = $this->cleanName($fromName);
 
-        if (null !== $isGlobal) {
-            if ($isGlobal) {
-                if (is_array($fromEmail)) {
-                    $this->from = $fromEmail;
-                } else {
-                    $this->from = [$fromEmail => $fromName];
-                }
-            } else {
-                // Reset the default to the system from
-                $this->from = $this->systemFrom;
-            }
-
-            $this->useGlobalFrom = $isGlobal;
+        if (is_array($fromEmail)) {
+            $this->from = $fromEmail;
+        } else {
+            $this->from = [$fromEmail => $fromName];
         }
 
         try {
@@ -2032,6 +2014,48 @@ class MailHelper
         }
 
         return $name;
+    }
+
+    /**
+     * @param $contact
+     *
+     * @return bool|array
+     */
+    protected function getContactOwner(&$contact)
+    {
+        $owner = false;
+        $email = $this->getEmail();
+
+        if (!empty($email)) {
+            if ($email->getUseOwnerAsMailer() && is_array($contact) && isset($contact['id'])) {
+                if (!isset($contact['owner_id'])) {
+                    $contact['owner_id'] = 0;
+                } elseif (isset($contact['owner_id'])) {
+                    $leadModel = $this->factory->getModel('lead');
+                    if (isset(self::$leadOwners[$contact['owner_id']])) {
+                        $owner = self::$leadOwners[$contact['owner_id']];
+                    } elseif ($owner = $leadModel->getRepository()->getLeadOwner($contact['owner_id'])) {
+                        self::$leadOwners[$owner['id']] = $owner;
+                    }
+                }
+            }
+        }
+
+        return $owner;
+    }
+
+    /**
+     * @param $owner
+     *
+     * @return mixed
+     */
+    protected function getContactOwnerSignature($owner)
+    {
+        return empty($owner['signature'])
+            ? false
+            : EmojiHelper::toHtml(
+                str_replace('|FROM_NAME|', $owner['first_name'].' '.$owner['last_name'], nl2br($owner['signature']))
+            );
     }
 
     /**
