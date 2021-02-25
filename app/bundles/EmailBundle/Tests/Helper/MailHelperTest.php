@@ -358,7 +358,6 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
 
         $mailer->setEmail($email);
         $mailer->enableQueue();
-        $mailer->enableQueue();
 
         $mailer->setSubject('Hello');
 
