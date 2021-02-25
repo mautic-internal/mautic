@@ -565,7 +565,7 @@ class MailHelper
             $errors['failures'] = [];
             $flushed            = false;
 
-            foreach ($this->metadata as $fromKey => $metadatum) {
+            foreach ($this->metadata as $metadatum) {
                 // Whatever is in the message "to" should be ignored as we will send to the contacts grouped by from addresses
                 // This prevents mailers such as sparkpost from sending duplicates to contacts
                 $this->message->setTo([]);
