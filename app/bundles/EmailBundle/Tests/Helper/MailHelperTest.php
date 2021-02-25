@@ -109,6 +109,8 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
 
     public function testQueueModeThrowsExceptionWhenBatchLimitHit()
     {
+        $this->expectException(BatchQueueMaxException::class);
+
         $mockFactory = $this->mockFactory;
         $mockFactory->method('getParameter')
             ->will(
