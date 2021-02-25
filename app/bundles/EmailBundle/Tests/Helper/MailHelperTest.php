@@ -387,9 +387,10 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
         $mockFactory = $this->getMockFactory();
         $transport   = new BcInterfaceTokenTransport();
         $swiftMailer = new \Swift_Mailer($transport);
+
         $mailer = new MailHelper($mockFactory, $swiftMailer, ['nobody@nowhere.com' => 'No Body']);
-        $email = new Email();
-      
+        $email  = new Email();
+
         $this->fromEmailHelper->expects($this->exactly(4))
             ->method('getFromAddressArrayConsideringOwner')
             ->willReturnOnConsecutiveCalls(
@@ -398,7 +399,7 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
                 ['owner2@owner.com'   => null],
                 ['nobody@nowhere.com' => null]
             );
-        
+
         $email->setUseOwnerAsMailer(true);
 
         $mailer->setEmail($email);
