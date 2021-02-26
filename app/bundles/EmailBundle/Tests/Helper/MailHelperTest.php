@@ -356,14 +356,20 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
         $email  = new Email();
         $email->setUseOwnerAsMailer(true);
 
+        $this->fromEmailHelper->expects($this->exactly(4))
+            ->method('getFromAddressArrayConsideringOwner')
+            ->willReturnOnConsecutiveCalls(
+                ['owner1@owner.com' => 'owner 1'],
+                ['nobody@nowhere.com' => 'owner 2'],
+                ['owner2@owner.com'   => 'owner 2'],
+                ['owner3@owner.com'   => 'owner 3']
+            );
+
         $mailer->setEmail($email);
         $mailer->enableQueue();
-
         $mailer->setSubject('Hello');
 
-        $contacts                = $this->contacts;
-        $contacts[3]['owner_id'] = 3;
-
+        $contacts = $this->contacts;
         foreach ($contacts as $contact) {
             $mailer->addTo($contact['email']);
             $mailer->setLead($contact);
@@ -378,7 +384,7 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(4, count($fromAddresses));
         $this->assertEquals(4, count($fromNames));
         $this->assertEquals(['owner1@owner.com', 'nobody@nowhere.com', 'owner2@owner.com', 'owner3@owner.com'], $fromAddresses);
-        $this->assertEquals([null, "No Body's Business", null, "John S'mith"], $fromNames);
+        $this->assertEquals(['owner 1', 'owner 2', 'owner 2', 'owner 3'], $fromNames);
     }
 
     public function testBatchIsEnabledWithBcTokenInterface()
@@ -462,6 +468,12 @@ class MailHelperTest extends \PHPUnit\Framework\TestCase
         $swiftMailer = new \Swift_Mailer($transport);
         $mailer      = new MailHelper($mockFactory, $swiftMailer, ['nobody@nowhere.com' => 'No Body']);
         $email       = new Email();
+
+        $this->fromEmailHelper->expects($this->any())
+            ->method('getFromAddressArrayConsideringOwner')
+            ->willReturn(
+                ['nobody@nowhere.com' => 'No Body']
+            );
 
         $email->setUseOwnerAsMailer(false);
         $email->setFromAddress('override@nowhere.com');
