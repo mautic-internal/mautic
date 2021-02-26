@@ -786,6 +786,13 @@ class SendEmailToContactTest extends \PHPUnit\Framework\TestCase
 
         $swiftMailer = new \Swift_Mailer(new BatchTransport());
 
+        $fromEmaiHelper = $this->createMock(FromEmailHelper::class);
+        $fromEmaiHelper->expects($this->once())
+            ->method('setDefaultFromArray');
+        $mockFactory->method('get')
+            ->with('mautic.helper.from_email_helper')
+            ->willReturn($fromEmaiHelper);
+
         $mailHelper = new MailHelper($mockFactory, $swiftMailer, ['nobody@nowhere.com' => 'No Body']);
 
         $statRepository = $this->getMockBuilder(StatRepository::class)
